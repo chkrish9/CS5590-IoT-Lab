@@ -1,0 +1,129 @@
+app.get('/adafruitvisual', function (req, res) {
+     var body ='';
+     var flag = false;
+    const https = require('https');
+    https.get('https://api.thingspeak.com/channels/698833/feeds.json', (resp) => {
+        let data = '';
+        // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {
+            data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on('end', () => {
+            body = JSON.parse(data);
+            console.log(JSON.parse(data).explanation);
+            sendToadafruit(body,function () {
+            }  );
+        });
+
+    }).on("error", (err) => {
+        console.log("Error: " + err.message);
+    });
+})
+
+
+var sendToadafruit = function (data,callback) {
+
+    var request = require('request');
+    var jsonObject={};
+    var key = 'detail';
+    jsonObject[key] = [];
+    var length = data.feeds.length;
+    for (var i = length-1; i > length-5; i--) {
+    //Dust
+        if(data.feeds[i].field7 != null) {
+            var icon ='';
+            if(data.feeds[i].field7 < 2){
+                icon = 'w:day-sunny';
+            }else {
+                icon='w:day-haze';
+            }
+             request({
+                headers: {
+                    'X-AIO-Key':'7fbd226249ff44adb3ee40759eea1af9',
+                    'Content-Type': 'application/json'
+                },
+                url: "https://io.adafruit.com/api/v2/nonosha/feeds/dust/data",
+                method: "POST",
+                json: true,   // <--Very important!!!
+                body: {value:icon}
+            }, function (error, response, body){
+                console.log(response);
+
+            });
+        }
+
+        //Temp
+        if(data.feeds[i].field1 != null) {
+
+            request({
+                headers: {
+                    'X-AIO-Key':'7fbd226249ff44adb3ee40759eea1af9',
+                    'Content-Type': 'application/json'
+                },
+                url: "https://io.adafruit.com/api/v2/nonosha/feeds/temperature/data",
+                method: "POST",
+                json: true,   // <--Very important!!!
+                body: {value:data.feeds[i].field1}
+            }, function (error, response, body){
+                console.log(response);
+
+            });
+        }
+        // Light
+        if(data.feeds[i].field6 != null) {
+
+            request({
+                headers: {
+                    'X-AIO-Key':'7fbd226249ff44adb3ee40759eea1af9',
+                    'Content-Type': 'application/json'
+                },
+                url: "https://io.adafruit.com/api/v2/nonosha/feeds/light/data",
+                method: "POST",
+                json: true,   // <--Very important!!!
+                body: {value:data.feeds[i].field6}
+            }, function (error, response, body){
+                console.log(response);
+
+            });
+        }
+        //
+        //Pressure
+        if(data.feeds[i].field4 != null) {
+
+            request({
+                headers: {
+                    'X-AIO-Key':'7fbd226249ff44adb3ee40759eea1af9',
+                    'Content-Type': 'application/json'
+                },
+                url: "https://io.adafruit.com/api/v2/nonosha/feeds/pressure/data",
+                method: "POST",
+                json: true,   // <--Very important!!!
+                body: {value:data.feeds[i].field4}
+            }, function (error, response, body){
+                console.log(response);
+
+            });
+        }
+
+        if(data.feeds[i].field8 != null) {
+
+            request({
+                headers: {
+                    'X-AIO-Key':'7fbd226249ff44adb3ee40759eea1af9',
+                    'Content-Type': 'application/json'
+                },
+                url: "https://io.adafruit.com/api/v2/nonosha/feeds/heart-beat/data",
+                method: "POST",
+                json: true,   // <--Very important!!!
+                body: {value:data.feeds[i].field8}
+            }, function (error, response, body){
+                console.log(response);
+
+            });
+        }
+
+    }
+
+}
